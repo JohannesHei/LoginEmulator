@@ -1,0 +1,5 @@
+D:\Programming\C#\Projects\BF2GamespyLoginEmulator\bin\Debug\BF2GamespyLoginEmulator.exe
+D:\Programming\C#\Projects\BF2GamespyLoginEmulator\bin\Debug\BF2GamespyLoginEmulator.pdb
+D:\Programming\C#\Projects\BF2GamespyLoginEmulator\obj\x86\Debug\ResolveAssemblyReference.cache
+D:\Programming\C#\Projects\BF2GamespyLoginEmulator\obj\x86\Debug\BF2GamespyLoginEmulator.exe
+D:\Programming\C#\Projects\BF2GamespyLoginEmulator\obj\x86\Debug\BF2GamespyLoginEmulator.pdb
