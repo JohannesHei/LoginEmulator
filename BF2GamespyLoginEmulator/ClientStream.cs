@@ -35,5 +35,17 @@ namespace Gamespy
 
             return message.ToString();
         }
+
+        public void Write(string message)
+        {
+            byte[] wBuffer = Encoding.ASCII.GetBytes(message);
+            this.Write(wBuffer);
+        }
+
+        public void Write(byte[] bytes)
+        {
+            NetworkStream Stream = Client.GetStream();
+            Stream.Write(bytes, 0, bytes.Length);
+        }
     }
 }
