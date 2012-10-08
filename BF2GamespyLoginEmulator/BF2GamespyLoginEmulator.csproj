@@ -78,6 +78,7 @@
     <Compile Include="ClientCM.cs" />
     <Compile Include="ClientSP.cs" />
     <Compile Include="ClientStream.cs" />
+    <Compile Include="SocketExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />
