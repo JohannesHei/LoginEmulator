@@ -8,8 +8,8 @@
     <ProjectGuid>{4CAF2D97-5EB0-4241-A06E-F4B8B1DED26A}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BF2GamespyLoginEmulator</RootNamespace>
-    <AssemblyName>BF2GamespyLoginEmulator</AssemblyName>
+    <RootNamespace>Gamespy</RootNamespace>
+    <AssemblyName>Gamespy Login Emulator</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -46,9 +46,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />
-    <Compile Include="Socket Classes\BF2A.cs" />
-    <Compile Include="Socket Classes\GPCM.cs" />
-    <Compile Include="Socket Classes\GPSP.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
