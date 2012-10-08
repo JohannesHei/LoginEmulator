@@ -74,6 +74,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientBF2A.cs" />
+    <Compile Include="ClientCM.cs" />
+    <Compile Include="ClientSP.cs" />
+    <Compile Include="ClientStream.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />

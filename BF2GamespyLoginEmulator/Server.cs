@@ -68,7 +68,16 @@ namespace Gamespy
 
         private void GPCMLoop()
         {
-            //...
+            while (true)
+            {
+                //blocks until a client has connected to the server
+                TcpClient client = GPCMListener.AcceptTcpClient();
+
+                Thread clientThread = new Thread(new ParameterizedThreadStart( InitClientCM ));
+                clientThread.IsBackground = true;
+                clientThread.Start(client);
+                
+            }
         }
 
         private void GPSPLoop()
@@ -99,6 +108,11 @@ namespace Gamespy
                     }
                 }
             }
+        }
+
+        private void InitClientCM(object client)
+        {
+            ClientCM clientCM = new ClientCM((TcpClient)client);
         }
     }
 }
