@@ -28,9 +28,9 @@ namespace Gamespy
 
             Console.Write
             (
-                "<BF2A> successfully bound to {0}" + Environment.NewLine +
-                "<GPCM> successfully bound to {1}" + Environment.NewLine +
-                "<GPSP> successfully bound to {2}" + Environment.NewLine,
+                "<battlefield2.available.gamespy.com> successfully bound to {0}" + Environment.NewLine +
+                "<gpcm.gamespy.com> successfully bound to {1}" + Environment.NewLine +
+                "<gpsp.gamespy.com> successfully bound to {2}" + Environment.NewLine,
                 BF2ASocket.LocalEndPoint, GPCMListener.LocalEndpoint, GPSPListener.LocalEndpoint
             );
 

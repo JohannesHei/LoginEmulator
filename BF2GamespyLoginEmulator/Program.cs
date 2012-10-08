@@ -6,6 +6,9 @@ namespace Gamespy
     {
         static void Main(string[] args)
         {
+            // Set window title
+            Console.Title = "Battlefield 2 Gamespy Login Emulator";
+
             // Run the server
             Server iServer;
 
