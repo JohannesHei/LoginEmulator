@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
@@ -12,12 +13,14 @@ namespace Gamespy
     /// create new user accounts, and fetch profile information
     /// <remarks>gpcm.gamespy.com</remarks>
     /// </summary>
-    class ClientCM
+    class ClientCM : IDisposable
     {
         #region Variables
 
+        public bool Disposed { get; protected set; }
+        private Thread iThread;
         private ClientStream Stream;
-        private TcpClient client;
+        private TcpClient Client;
         private Random rand;
         private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string chars2 = "123456789abcdef";
@@ -83,6 +86,7 @@ namespace Gamespy
             };
 
         private int Step = 0;
+        private bool BF1_5 = false;
         private string clientNick;
         private string clientChallengeKey;
         private string serverChallengeKey;
@@ -93,25 +97,66 @@ namespace Gamespy
 
         public ClientCM(TcpClient client)
         {
-            this.client = client;
+            // Set disposed to false!
+            this.Disposed = false;
 
-            Console.WriteLine(" - <GPCM> Client Connected: {0}", client.Client.RemoteEndPoint);
+            // Set the client variable
+            this.Client = client;
 
              // Init a new client stream class
             Stream = new ClientStream(client);
 
+            iThread = new Thread(new ThreadStart(Start));
+            iThread.IsBackground = true;
+            iThread.Start();
+        }
+
+        //Destructor.
+        ~ClientCM()
+        {
+                // We don't clean up managed resources here but the Framework does that automatically on class destruction.
+                this.Dispose( false );
+        }
+               
+        //This becomes private void Dispose( bool Disposing ) on sealed classes.
+        protected virtual void Dispose( bool Disposing )
+        {
+                //If we've already been disposed, don't call again.
+                if( this.Disposed )
+                        return;
+                               
+                if( Disposing )
+                {
+                        //Dispose of all managed resources here, for example a Windows.Forms.Control, Component or other object on the Framework.
+                }
+                       
+                //Done.
+                this.Disposed = true;
+        }
+
+        public void Dispose()
+        {
+            //Clean up everything.
+            this.Dispose(true);
+        }
+
+        #region Steps
+
+        public void Start()
+        {
+            Console.WriteLine(" - <GPCM> Client Connected: {0}", Client.Client.RemoteEndPoint);
+
             // Start by sending the server challenge
             SendServerChallenge();
 
-            while (client.Client.IsConnected())
+            while (Client.Client.IsConnected())
             {
                 Update();
             }
 
-            Console.WriteLine(" - <GPCM> Client Disconnected: {0}", client.Client.RemoteEndPoint);
+            Console.WriteLine(" - <GPCM> Client Disconnected: {0}", Client.Client.RemoteEndPoint);
+            Dispose(); 
         }
-
-        #region Steps
 
         /// <summary>
         ///  This method starts off by sending a random string 10 characters
@@ -138,6 +183,11 @@ namespace Gamespy
         /// </summary>
         private void ProccessLogin(string[] recv)
         {
+            // If the request length is 20 or 24 long, its BF2 1.5
+            int L = recv.Length - 3;
+            if(L == 20 || L == 24)
+                BF1_5 = true;
+
             // If the first string is 'newuser', then we are creating
             // a new account, otherwise its a login proccess
             if (recv[1] == "newuser")
@@ -146,9 +196,9 @@ namespace Gamespy
             }
             else
             {
-                clientNick = getParameterValue(recv, "uniquenick");
-                clientChallengeKey = getParameterValue(recv, "challenge");
-                clientResponse = getParameterValue(recv, "response");
+                clientNick = GetParameterValue(recv, "uniquenick");
+                clientChallengeKey = GetParameterValue(recv, "challenge");
+                clientResponse = GetParameterValue(recv, "response");
                 SendProof();
             }
         }
@@ -191,8 +241,15 @@ namespace Gamespy
                     "101249154", clientNick, "101249154", "wilson.steven10@yahoo.com", GenerateSig(), clientNick
                 );
             Stream.Write(data);
-            //Stream.Write( String.Format("\\lt\\{0}\\final\\", GenerateRandomString(22)));
-            //Stream.Write("\\ka\\\\final\\");
+
+            // Idk why... but it has to be this way
+            if (BF1_5)
+            {
+                Stream.Write("\\ka\\\\final\\");
+                Stream.Write("\\ka\\\\final\\");
+                Stream.Write( String.Format("\\lt\\{0}\\final\\", GenerateRandomString(22)));
+                Stream.Write("\\ka\\\\final\\");
+            }
         }
 
         private void Update()
@@ -201,7 +258,7 @@ namespace Gamespy
             {
                 // TODO: process the 'getprofile' (returned at this point) data
                 string message = Stream.Read();
-                string[] recv = message.Split(backslash);
+                string[] recv = message.Split('\\');
 
                 switch (Step)
                 {
@@ -241,7 +298,7 @@ namespace Gamespy
         /// <param name="parts">The array of data from the client</param>
         /// <param name="parameter">The parameter</param>
         /// <returns>The value of the paramenter key</returns>
-        private string getParameterValue(string[] parts, string parameter)
+        private string GetParameterValue(string[] parts, string parameter)
         {
             bool next = false;
             foreach (string part in parts)

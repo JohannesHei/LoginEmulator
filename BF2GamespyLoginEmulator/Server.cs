@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -22,7 +23,7 @@ namespace Gamespy
 
         public void Start()
         {
-            //BF2ASocket.Bind( new IPEndPoint( IPAddress.Loopback, 27905 ) );
+            //BF2ASocket.Bind( new IPEndPoint( IPAddress.Loopback, 27900 ) );
             GPSPListener.Start();
             GPCMListener.Start();
 
@@ -67,21 +68,48 @@ namespace Gamespy
 
         private void GPCMLoop()
         {
-            while (true)
-            {
-                //blocks until a client has connected to the server
-                TcpClient client = GPCMListener.AcceptTcpClient();
+            List<ClientCM> Clients = new List<ClientCM>();
 
-                Thread clientThread = new Thread(new ParameterizedThreadStart( InitClientCM ));
-                clientThread.IsBackground = true;
-                clientThread.Start(client);
-                
+            while (!Shutdown)
+            {
+                if (GPCMListener.Pending())
+                {
+                    TcpClient client = GPCMListener.AcceptTcpClient();
+                    Clients.Add(new ClientCM(client));
+                }
+
+                for(int i = 0; i < Clients.Count; i++)
+                {
+                    if (Clients[i].Disposed)
+                    {
+                        Clients.RemoveAt(i);
+                        Console.WriteLine("Successfully Removed Client");
+                    }
+                }
             }
         }
 
         private void GPSPLoop()
         {
-            //...
+            List<ClientSP> Clients = new List<ClientSP>();
+
+            while (!Shutdown)
+            {
+                if (GPSPListener.Pending())
+                {
+                    TcpClient client = GPSPListener.AcceptTcpClient();
+                    Clients.Add(new ClientSP(client));
+                }
+
+                for (int i = 0; i < Clients.Count; i++)
+                {
+                    if (Clients[i].Disposed)
+                    {
+                        Clients.RemoveAt(i);
+                        Console.WriteLine("Successfully Removed Client");
+                    }
+                }
+            }
         }
 
         private void InputLoop()
