@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 
 namespace Gamespy
 {
@@ -21,6 +20,7 @@ namespace Gamespy
         private TcpClient client;
         private Random rand;
         private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private const string chars2 = "123456789abcdef";
         private char[] backslash = { '\\' };
         private string[] BtoH = { 
                 "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f",
@@ -82,6 +82,7 @@ namespace Gamespy
                 0x8201,0x42C0,0x4380,0x8341,0x4100,0x81C1,0x8081,0x4040
             };
 
+        private int Step = 0;
         private string clientNick;
         private string clientChallengeKey;
         private string serverChallengeKey;
@@ -99,8 +100,15 @@ namespace Gamespy
              // Init a new client stream class
             Stream = new ClientStream(client);
 
-            // Start off by sending the client a challenge
+            // Start by sending the server challenge
             SendServerChallenge();
+
+            while (client.Client.IsConnected())
+            {
+                Update();
+            }
+
+            Console.WriteLine(" - <GPCM> Client Disconnected: {0}", client.Client.RemoteEndPoint);
         }
 
         #region Steps
@@ -122,26 +130,17 @@ namespace Gamespy
             // Next we send the client the challenge key
             serverChallengeKey = buffer.ToString();
             Stream.Write( String.Format("\\lc\\1\\challenge\\{0}\\id\\1\\final\\", serverChallengeKey) );
-
-            // Process the login information returned by the client
-            RecvLogin();
         }
 
         /// <summary>
         /// This method takes the returned server challenge info
         /// and uses it to determine what we have to return next
         /// </summary>
-        private void RecvLogin()
+        private void ProccessLogin(string[] recv)
         {
-            // Read the stream to get the client login data
-            string message = Stream.Read();
-
-            // Create an array by spliting the returned data
-            string[] recv = message.Split(backslash);
-
             // If the first string is 'newuser', then we are creating
             // a new account, otherwise its a login proccess
-            if (recv[0] == "newuser")
+            if (recv[1] == "newuser")
             {
                 HandleNewUser(recv);
             }
@@ -176,15 +175,48 @@ namespace Gamespy
                     GenerateSession(), proof, "101249154", "101249154", clientNick, GenerateRandomString(22)
                 );
                 Stream.Write(data);
-
-                // TODO: process the 'getprofile' (returned at this point) data
-                Console.WriteLine(Stream.Read());
             }
             else
             {
                 // Password is incorrect with database value
                 Stream.Write("\\error\\\\err\\260\\fatal\\\\errmsg\\The password provided is incorrect.\\id\\1\\final\\");
             }
+        }
+
+        private void SendProfile()
+        {
+            string data = String.Format(
+                    "\\pi\\\\profileid\\{0}\\nick\\{1}\\userid\\{2}\\email\\{3}\\sig\\{4}\\uniquenick\\{5}\\pid\\0\\firstname\\\\lastname\\" +
+                    "\\country\\US\\birthday\\16844722\\lon\\0.000000\\lat\\0.000000\\loc\\\\id\\2\\final\\",
+                    "101249154", clientNick, "101249154", "wilson.steven10@yahoo.com", GenerateSig(), clientNick
+                );
+            Stream.Write(data);
+            //Stream.Write( String.Format("\\lt\\{0}\\final\\", GenerateRandomString(22)));
+            //Stream.Write("\\ka\\\\final\\");
+        }
+
+        private void Update()
+        {
+            if (Stream.HasData())
+            {
+                // TODO: process the 'getprofile' (returned at this point) data
+                string message = Stream.Read();
+                string[] recv = message.Split(backslash);
+
+                switch (Step)
+                {
+                    case 0:
+                        ProccessLogin(recv);
+                        Step++;
+                        break;
+                    case 1:
+                        SendProfile();
+                        Step++;
+                        break;
+                    case 2:
+                        break;
+                }
+            } 
         }
 
         #endregion Steps
@@ -285,6 +317,19 @@ namespace Gamespy
             {
                 --length;
                 s += alphanumeric[rand.Next(62)];
+            }
+            return s;
+        }
+
+        private string GenerateSig()
+        {
+            string s = "";
+            int length = 32;
+
+            while (length > 0)
+            {
+                --length;
+                s += chars2[rand.Next(14)];
             }
             return s;
         }

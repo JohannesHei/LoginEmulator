@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
@@ -10,18 +8,32 @@ namespace Gamespy
     class ClientStream
     {
         private TcpClient Client;
+        private NetworkStream Stream;
 
         public ClientStream(TcpClient client)
         {
             this.Client = client;
+            this.Stream = client.GetStream();
         }
 
+        /// <summary>
+        /// Returns a bool based off on wether there is data available to be read
+        /// </summary>
+        /// <returns></returns>
+        public bool HasData()
+        {
+            return Stream.DataAvailable;
+        }
+
+        /// <summary>
+        /// Reads from the client stream. Will rest until data is recieved
+        /// </summary>
+        /// <returns>The completed data from the client</returns>
         public string Read()
         {
             int bytesRead = 0;
             int bufferSize = Client.ReceiveBufferSize;
             byte[] buffer = new byte[bufferSize];
-            NetworkStream Stream = Client.GetStream();
             string message = "";
 
             do
@@ -39,7 +51,7 @@ namespace Gamespy
 
                 //Trim off the null bytes.
                 Array.Resize(ref buffer, Counter);
-                message = Encoding.UTF8.GetString(buffer);
+                message += Encoding.UTF8.GetString(buffer);
 
             } while (Stream.DataAvailable);
 
@@ -49,15 +61,22 @@ namespace Gamespy
             return message.ToString();
         }
 
+        /// <summary>
+        /// Writes a message to the client stream
+        /// </summary>
+        /// <param name="message">The complete message to be sent to the client</param>
         public void Write(string message)
         {
             byte[] wBuffer = Encoding.ASCII.GetBytes(message);
             this.Write(wBuffer);
         }
 
+        /// <summary>
+        /// Writes a message to the client stream
+        /// </summary>
+        /// <param name="bytes">An array of bytes to send to the stream</param>
         public void Write(byte[] bytes)
         {
-            NetworkStream Stream = Client.GetStream();
             Stream.Write(bytes, 0, bytes.Length);
         }
     }

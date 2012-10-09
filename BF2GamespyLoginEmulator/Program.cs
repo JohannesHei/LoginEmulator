@@ -1,4 +1,11 @@
-﻿using System;
+﻿// ------------------------------------------
+// Gamespy Login emulator for battlefield 2
+//
+// Created By: Plexis Development Team
+// Author: Steven Wilson
+// Author: Tony Hudgins
+// ------------------------------------------
+using System;
 
 namespace Gamespy
 {
