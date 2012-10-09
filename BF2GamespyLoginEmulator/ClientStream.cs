@@ -22,12 +22,25 @@ namespace Gamespy
             int bufferSize = Client.ReceiveBufferSize;
             byte[] buffer = new byte[bufferSize];
             NetworkStream Stream = Client.GetStream();
-            StringBuilder message = new StringBuilder();
+            string message = "";
 
             do
             {
                 bytesRead += Stream.Read(buffer, 0, bufferSize);
-                message.AppendFormat("{0}", Encoding.ASCII.GetString(buffer, 0, bufferSize));
+                int Counter = 1;
+
+                foreach (byte b in buffer)
+                {
+                    if (b == 0x00)
+                        break;
+
+                    ++Counter;
+                }
+
+                //Trim off the null bytes.
+                Array.Resize(ref buffer, Counter);
+                message = Encoding.UTF8.GetString(buffer);
+
             } while (Stream.DataAvailable);
 
             if (bytesRead == 0)

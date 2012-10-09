@@ -12,10 +12,5 @@ namespace Gamespy
         {
 
         }
-
-        public Dictionary <string, string>GetUserData(string nick)
-        {
-
-        }
     }
 }

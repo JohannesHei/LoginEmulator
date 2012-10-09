@@ -7,7 +7,7 @@ namespace Gamespy
 {
     public sealed class Server
     {
-        private Socket BF2ASocket;
+        // private Socket BF2ASocket;
         private TcpListener GPCMListener, GPSPListener;
         private Thread BF2AThread, GPCMThread, GPSPThread, InputThread;
         bool Shutdown = false;
@@ -15,41 +15,40 @@ namespace Gamespy
         public Server()
         {
             // Init the socket classes here
-            BF2ASocket = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
+            //BF2ASocket = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
             GPCMListener = new TcpListener( IPAddress.Loopback, 29900 );
             GPSPListener = new TcpListener( IPAddress.Loopback, 29901 );
         }
 
         public void Start()
         {
-            BF2ASocket.Bind( new IPEndPoint( IPAddress.Loopback, 27900 ) );
+            //BF2ASocket.Bind( new IPEndPoint( IPAddress.Loopback, 27905 ) );
             GPSPListener.Start();
             GPCMListener.Start();
 
             Console.Write
             (
-                "<battlefield2.available.gamespy.com> successfully bound to {0}" + Environment.NewLine +
-                "<gpcm.gamespy.com> successfully bound to {1}" + Environment.NewLine +
-                "<gpsp.gamespy.com> successfully bound to {2}" + Environment.NewLine,
-                BF2ASocket.LocalEndPoint, GPCMListener.LocalEndpoint, GPSPListener.LocalEndpoint
+                "<gpcm.gamespy.com> successfully bound to {0}" + Environment.NewLine +
+                "<gpsp.gamespy.com> successfully bound to {1}" + Environment.NewLine,
+                GPCMListener.LocalEndpoint, GPSPListener.LocalEndpoint
             );
 
             InputThread = new Thread( InputLoop );
-            BF2AThread = new Thread( BF2ALoop );
+            //BF2AThread = new Thread( BF2ALoop );
             GPCMThread = new Thread( GPCMLoop );
             GPSPThread = new Thread( GPSPLoop );
 
-            BF2AThread.IsBackground = true;
+            //BF2AThread.IsBackground = true;
             GPCMThread.IsBackground = true;
             GPSPThread.IsBackground = true;
             InputThread.IsBackground = false;
 
-            BF2AThread.Name = "BF2A Listner";
+            //BF2AThread.Name = "BF2A Listner";
             GPCMThread.Name = "GPCM Listner";
             GPSPThread.Name = "GPSP Listner";
             InputThread.Name = "Input Listener";
 
-            BF2AThread.Start();
+            //BF2AThread.Start();
             GPCMThread.Start();
             GPSPThread.Start();
             InputThread.Start();
