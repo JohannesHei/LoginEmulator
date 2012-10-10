@@ -68,7 +68,7 @@ namespace Gamespy.Database
         {
             Connection.Close();
             Connection.Dispose();
-            Command.Dispose();
+            // Command.Dispose(); <-- Causeing shutdown exceptions
         }
 
         public List<Dictionary<string, object>> Query( string Sql )

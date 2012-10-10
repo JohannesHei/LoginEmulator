@@ -18,9 +18,9 @@ namespace Gamespy
         private GamespyDatabase GsDB;
         private bool BF_15 = false;
         private string clientNick;
-        private string clientPID;
+        private Dictionary<string, object> ClientData = null;
 
-        public ClientSP(TcpClient client)
+        public ClientSP(TcpClient client, GamespyDatabase gsDB)
         {
             // Set disposed to false!
             this.Disposed = false;
@@ -29,7 +29,7 @@ namespace Gamespy
             this.Client = client;
 
             // Init a database connection
-            GsDB = new GamespyDatabase();
+            this.GsDB = gsDB;
 
             // Init a new client stream class
             Stream = new ClientStream(client);
@@ -98,12 +98,16 @@ namespace Gamespy
                             BF_15 = true;
 
                         // TODO Validate that the account exists!
-                        // GetUser(GetParamenterValue(recv, "email"), GetParamenterValue(recv, "pass"));
-                        clientNick = "Wilson212";
+                        ClientData = GsDB.GetUser(GetParameterValue(recv, "email"), GetParameterValue(recv, "pass"));
+                        if (ClientData == null)
+                        {
+                            Stream.Write("\\nr\\0\\ndone\\\\final\\");
+                            break;
+                        }
                         SendGPSP();
                         break;
                     case "check":
-                        SendCheck();
+                        SendCheck(recv);
                         break;
                 }
             }
@@ -111,14 +115,34 @@ namespace Gamespy
 
         private void SendGPSP()
         {
-            string message = String.Format("\\nr\\1\\nick\\{0}\\uniquenick\\{1}\\ndone\\\\final\\", clientNick, clientNick);
+            string message = String.Format("\\nr\\1\\nick\\{0}\\uniquenick\\{1}\\ndone\\\\final\\", 
+                (string)ClientData["name"], (string)ClientData["name"]
+            );
             Stream.Write(message);
         }
 
-        private void SendCheck()
+        private void SendCheck(string[] recv)
         {
-            clientPID = "101249154";
-            string message = String.Format("\\cur\\0\\pid\\{0}\\final\\", clientPID);
+            if (ClientData == null)
+            {
+                ClientData = GsDB.GetUser(GetParameterValue(recv, "nick"));
+                if (ClientData == null)
+                {
+                    Stream.Write("\\cur\\0\\pid\\0\\final\\");
+                    return;
+                }
+            }
+
+            // Calculate a proper pid
+            int pid;
+            if ((int)ClientData["id"] < 1000000)
+                pid = (((int)ClientData["id"]) + 500000000);
+            else
+                pid = (int)ClientData["id"];
+
+            ClientData["id"] = pid.ToString();
+
+            string message = String.Format("\\cur\\0\\pid\\{0}\\final\\", ClientData["id"]);
             Stream.Write(message);
         }
 

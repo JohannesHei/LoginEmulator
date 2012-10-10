@@ -16,6 +16,11 @@ namespace Gamespy
             Driver.Connect();
         }
 
+        ~GamespyDatabase()
+        {
+            Driver.Close();
+        }
+
         public Dictionary<string, object> GetUser(string Nick)
         {
             // Fetch the user

@@ -15,6 +15,7 @@ namespace Gamespy
         {
             // Set window title
             Console.Title = "Battlefield 2 Gamespy Login Emulator";
+            Console.WriteLine(String.Format("Initializing..."));
 
             // Run the server
             Server iServer;
@@ -23,7 +24,6 @@ namespace Gamespy
             {
                 iServer = new Server();
                 iServer.Start();
-
             }
             catch( System.Net.Sockets.SocketException e )
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Gamespy.Database;
 
 namespace Gamespy
 {
@@ -12,9 +13,15 @@ namespace Gamespy
         private TcpListener GPCMListener, GPSPListener;
         private Thread BF2AThread, GPCMThread, GPSPThread, InputThread;
         bool Shutdown = false;
+        private GamespyDatabase GsDB;
+        private List<ClientCM> ClientsCM;
+        private List<ClientSP> ClientsSP;
 
         public Server()
         {
+            // First, Try to connect to the database!
+            GsDB = new GamespyDatabase();
+
             // Init the socket classes here
             //BF2ASocket = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
             GPCMListener = new TcpListener( IPAddress.Loopback, 29900 );
@@ -53,6 +60,9 @@ namespace Gamespy
             GPCMThread.Start();
             GPSPThread.Start();
             InputThread.Start();
+
+            Console.WriteLine("Ready for connections!");
+            Console.Beep();
         }
 
         public void Stop()
@@ -68,22 +78,21 @@ namespace Gamespy
 
         private void GPCMLoop()
         {
-            List<ClientCM> Clients = new List<ClientCM>();
+            ClientsCM = new List<ClientCM>();
 
             while (!Shutdown)
             {
                 if (GPCMListener.Pending())
                 {
                     TcpClient client = GPCMListener.AcceptTcpClient();
-                    Clients.Add(new ClientCM(client));
+                    ClientsCM.Add(new ClientCM(client, GsDB));
                 }
 
-                for(int i = 0; i < Clients.Count; i++)
+                for(int i = 0; i < ClientsCM.Count; i++)
                 {
-                    if (Clients[i].Disposed)
+                    if (ClientsCM[i].Disposed)
                     {
-                        Clients.RemoveAt(i);
-                        Console.WriteLine("Successfully Removed Client");
+                        ClientsCM.RemoveAt(i);
                     }
                 }
             }
@@ -91,22 +100,21 @@ namespace Gamespy
 
         private void GPSPLoop()
         {
-            List<ClientSP> Clients = new List<ClientSP>();
+            ClientsSP = new List<ClientSP>();
 
             while (!Shutdown)
             {
                 if (GPSPListener.Pending())
                 {
                     TcpClient client = GPSPListener.AcceptTcpClient();
-                    Clients.Add(new ClientSP(client));
+                    ClientsSP.Add(new ClientSP(client, GsDB));
                 }
 
-                for (int i = 0; i < Clients.Count; i++)
+                for (int i = 0; i < ClientsSP.Count; i++)
                 {
-                    if (Clients[i].Disposed)
+                    if (ClientsSP[i].Disposed)
                     {
-                        Clients.RemoveAt(i);
-                        Console.WriteLine("Successfully Removed Client");
+                        ClientsSP.RemoveAt(i);
                     }
                 }
             }
@@ -124,22 +132,25 @@ namespace Gamespy
                 if( string.IsNullOrWhiteSpace( Line ) )
                     continue;
 
-                //Basic input logic.
-                if( Line.ToLower().Trim() == "q" || Line.ToLower().Trim() == "quit" || Line.ToLower().Trim() == "x" || Line.ToLower().Trim() == "exit" )
-                    Stop();
-                else
+                string command = Line.ToLower().Trim();
+                switch (command)
                 {
-                    lock( Console.Out )
-                    {
-                        Console.WriteLine( "Unrecognized input '{0}'", Line );
-                    }
+                    case "stop":
+                    case "quit":
+                    case "exit":
+                        Stop();
+                        break;
+                    case "connections":
+                        Console.WriteLine("Total Connections: {0}", ClientsCM.Count);
+                        break;
+                    default:
+                        lock (Console.Out)
+                        {
+                            Console.WriteLine("Unrecognized input '{0}'", Line);
+                        }
+                        break;
                 }
             }
-        }
-
-        private void InitClientCM(object client)
-        {
-            ClientCM clientCM = new ClientCM((TcpClient)client);
         }
     }
 }

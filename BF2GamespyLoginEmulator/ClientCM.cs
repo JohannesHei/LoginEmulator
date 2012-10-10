@@ -100,16 +100,16 @@ namespace Gamespy
         #endregion Variables
 
 
-        public ClientCM(TcpClient client)
+        public ClientCM(TcpClient client, GamespyDatabase gsDB)
         {
             // Set disposed to false!
             this.Disposed = false;
 
+            // Init DB
+            this.GsDB = gsDB;
+
             // Set the client variable
             this.Client = client;
-
-            // Load database connection
-            GsDB = new GamespyDatabase();
 
              // Init a new client stream class
             Stream = new ClientStream(client);
@@ -227,13 +227,8 @@ namespace Gamespy
                 return;
             }
 
-            // Make sure we have a valid PID
-            int pid;
-            if ((int)User["id"] < 1000000)
-                pid = (((int)User["id"]) + 500000000);
-            else
-                pid = (int)User["id"];
-
+            // Make sure the id is a string!
+            int pid = (int)User["id"];
             User["id"] = pid.ToString();
 
             // Use the GenerateRepsonseValue method to compare with the "response" value.
