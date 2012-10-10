@@ -152,7 +152,7 @@ namespace Gamespy
 
         public void Start()
         {
-            Console.WriteLine(" - <GPCM> Client Connected: {0}", Client.Client.RemoteEndPoint);
+            Server.Log("[GPCM] Client Connected: {0}", Client.Client.RemoteEndPoint);
 
             // Start by sending the server challenge
             SendServerChallenge();
@@ -162,7 +162,7 @@ namespace Gamespy
                 Update();
             }
 
-            Console.WriteLine(" - <GPCM> Client Disconnected: {0}", Client.Client.RemoteEndPoint);
+            Server.Log("[GPCM] Client Disconnected: {0}", Client.Client.RemoteEndPoint);
             Dispose(); 
         }
 
@@ -182,7 +182,7 @@ namespace Gamespy
 
             // Next we send the client the challenge key
             serverChallengeKey = buffer.ToString();
-            Stream.Write( String.Format("\\lc\\1\\challenge\\{0}\\id\\1\\final\\", serverChallengeKey) );
+            Stream.Write("\\lc\\1\\challenge\\{0}\\id\\1\\final\\", serverChallengeKey);
         }
 
         /// <summary>
@@ -196,19 +196,11 @@ namespace Gamespy
             if(L == 20 || L == 24)
                 BF1_5 = true;
 
-            // If the first string is 'newuser', then we are creating
-            // a new account, otherwise its a login proccess
-            if (recv[1] == "newuser")
-            {
-                HandleNewUser(recv);
-            }
-            else
-            {
-                clientNick = GetParameterValue(recv, "uniquenick");
-                clientChallengeKey = GetParameterValue(recv, "challenge");
-                clientResponse = GetParameterValue(recv, "response");
-                SendProof();
-            }
+            // Prepare to send proof back to the Client
+            clientNick = GetParameterValue(recv, "uniquenick");
+            clientChallengeKey = GetParameterValue(recv, "challenge");
+            clientResponse = GetParameterValue(recv, "response");
+            SendProof();
         }
 
         /// <summary>
@@ -222,7 +214,7 @@ namespace Gamespy
             User = GsDB.GetUser(clientNick);
             if (User == null)
             {
-                Stream.Write("\\error\\\\err\\260\\fatal\\\\errmsg\\Username [{0}] doesn't exist!\\id\\1\\final\\");
+                Stream.Write("\\error\\\\err\\260\\fatal\\\\errmsg\\Username [{0}] doesn't exist!\\id\\1\\final\\", clientNick);
                 Dispose();
                 return;
             }
@@ -241,11 +233,10 @@ namespace Gamespy
 
                 // Use the GenerateResponseValue method to create the proof string
                 string proof = GenerateResponseValue(clientNick, (string)User["password"], serverChallengeKey, clientChallengeKey);
-                string data = String.Format(
+                Stream.Write(
                     "\\lc\\2\\sesskey\\{0}\\proof\\{1}\\userid\\{2}\\profileid\\{3}\\uniquenick\\{4}\\lt\\{5}__\\id\\1\\final\\",
                     GenerateSession(), proof, pid, pid, clientNick, clientLt
                 );
-                Stream.Write(data);
             }
             else
             {
@@ -257,19 +248,18 @@ namespace Gamespy
 
         private void SendProfile(bool retrieve)
         {
-            string data = String.Format(
+            Stream.Write(
                     "\\pi\\\\profileid\\{0}\\nick\\{1}\\userid\\{2}\\email\\{3}\\sig\\{4}\\uniquenick\\{5}\\pid\\0\\firstname\\\\lastname\\" +
                     "\\countrycode\\{6}\\birthday\\16844722\\lon\\0.000000\\lat\\0.000000\\loc\\\\id\\{7}\\final\\",
                     (string)User["id"], clientNick, (string)User["id"], (string)User["email"], GenerateSig(), clientNick, (string)User["country"], 
                     (retrieve ? "5" : "2"));
-            Stream.Write(data);
 
             // Idk why... but it has to be this way
             if (BF1_5)
             {
                 Stream.Write("\\ka\\\\final\\");
                 Stream.Write("\\ka\\\\final\\");
-                Stream.Write( String.Format("\\lt\\{0}__\\final\\", clientLt));
+                Stream.Write("\\lt\\{0}__\\final\\", clientLt);
                 Stream.Write("\\ka\\\\final\\");
             }
         }
@@ -284,6 +274,10 @@ namespace Gamespy
 
                 switch (recv[1])
                 {
+                    case "newuser":
+                        HandleNewUser(recv);
+                        Step++;
+                        break;
                     case "login":
                         ProccessLogin(recv);
                         Step++;
@@ -313,7 +307,16 @@ namespace Gamespy
 
         private void HandleNewUser(string[] recv)
         {
-            // ...
+            string Nick = GetParameterValue(recv, "nick");
+            if (GsDB.UserExists(Nick))
+            {
+                Stream.Write("\\error\\\\err\\516\\fatal\\\\errmsg\\This account name is already in use!\\id\\1\\final\\");
+                Dispose();
+                return;
+            }
+
+            // TODO, password decrypt for database insertion
+            // Will have to use Gamespy's custom Base64 format for decoding
         }
 
         private void LogOut()

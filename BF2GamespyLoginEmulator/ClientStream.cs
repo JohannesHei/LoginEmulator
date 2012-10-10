@@ -74,6 +74,17 @@ namespace Gamespy
         /// <summary>
         /// Writes a message to the client stream
         /// </summary>
+        /// <param name="message">The complete message to be sent to the client</param>
+        public void Write(string message, params object[] items)
+        {
+            message = String.Format(message, items);
+            byte[] wBuffer = Encoding.ASCII.GetBytes(message);
+            this.Write(wBuffer);
+        }
+
+        /// <summary>
+        /// Writes a message to the client stream
+        /// </summary>
         /// <param name="bytes">An array of bytes to send to the stream</param>
         public void Write(byte[] bytes)
         {

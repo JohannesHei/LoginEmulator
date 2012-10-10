@@ -79,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base64.cs" />
     <Compile Include="ClientBF2A.cs" />
     <Compile Include="ClientCM.cs" />
     <Compile Include="ClientSP.cs" />

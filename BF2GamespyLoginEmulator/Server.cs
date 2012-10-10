@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -151,6 +152,33 @@ namespace Gamespy
                         break;
                 }
             }
+        }
+
+        public static void Log(string message)
+        {
+            DateTime datet = DateTime.Now;
+            String logFile = Path.Combine( Utils.AssemblyPath, "Console.log");
+            if (!File.Exists(logFile))
+            {
+                FileStream files = File.Create(logFile);
+                files.Close();
+            }
+            try
+            {
+                StreamWriter sw = File.AppendText(logFile);
+                sw.WriteLine(datet.ToString("MM/dd hh:mm") + "> " + message);
+                sw.Flush();
+                sw.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message.ToString());
+            }
+        }
+
+        public static void Log(string message, params object[] items)
+        {
+            Log(String.Format(message, items));
         }
     }
 }

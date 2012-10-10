@@ -92,6 +92,7 @@ namespace Gamespy.Database
             }
 
             Reader.Dispose();
+            Reader.Close();
             Command.Dispose();
 
             return Rows;

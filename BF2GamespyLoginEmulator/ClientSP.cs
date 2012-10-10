@@ -17,7 +17,6 @@ namespace Gamespy
         private Thread iThread;
         private GamespyDatabase GsDB;
         private bool BF_15 = false;
-        private string clientNick;
         private Dictionary<string, object> ClientData = null;
 
         public ClientSP(TcpClient client, GamespyDatabase gsDB)
@@ -71,14 +70,14 @@ namespace Gamespy
 
         public void Start()
         {
-            Console.WriteLine(" - <GPSP> Client Connected: {0}", Client.Client.RemoteEndPoint);
+            Server.Log("[GPSP] Client Connected: {0}", Client.Client.RemoteEndPoint);
 
             while (Client.Client.IsConnected())
             {
                 Update();
             }
 
-            Console.WriteLine(" - <GPSP> Client Disconnected: {0}", Client.Client.RemoteEndPoint);
+            Server.Log("[GPSP] Client Disconnected: {0}", Client.Client.RemoteEndPoint);
             Dispose();
         }
 
@@ -115,10 +114,9 @@ namespace Gamespy
 
         private void SendGPSP()
         {
-            string message = String.Format("\\nr\\1\\nick\\{0}\\uniquenick\\{1}\\ndone\\\\final\\", 
+            Stream.Write("\\nr\\1\\nick\\{0}\\uniquenick\\{1}\\ndone\\\\final\\", 
                 (string)ClientData["name"], (string)ClientData["name"]
             );
-            Stream.Write(message);
         }
 
         private void SendCheck(string[] recv)
@@ -142,8 +140,7 @@ namespace Gamespy
 
             ClientData["id"] = pid.ToString();
 
-            string message = String.Format("\\cur\\0\\pid\\{0}\\final\\", ClientData["id"]);
-            Stream.Write(message);
+            Stream.Write("\\cur\\0\\pid\\{0}\\final\\", ClientData["id"]);
         }
 
         /// <summary>
