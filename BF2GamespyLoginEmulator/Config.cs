@@ -24,30 +24,32 @@ namespace Gamespy
 
         static Config()
         {
-            Assembly Asm = Assembly.GetExecutingAssembly();
-
             //Build the path to our config file.
-            string StartupPath = Asm.Location;
-            IniLocation = Path.Combine( Path.GetDirectoryName( StartupPath ), "Config.ini" );
+            IniLocation = Path.Combine( Utils.AssemblyPath, "Config.ini" );
 
             //Check if it exists, if not, create the default one.
             if( !File.Exists( IniLocation ) )
             {
-                Stream ResStream = Asm.GetManifestResourceStream( "Gamespy.Config.ini" );
-                FileStream ConfigStream = File.Open( IniLocation, FileMode.Create, FileAccess.Write, FileShare.None );
-
-                ResStream.CopyTo( ConfigStream );
-                ResStream.Close();
-                ConfigStream.Close();
+                string IniString = Utils.GetResourceString( "Gamespy.Config.ini" );
+                File.WriteAllText( IniLocation, IniString, Encoding.UTF8 );
             }
         }
 
-        public static T Get<T>( string Section, string Key ) where T : IConvertible
+        public static T GetType<T>( string Section, string Key ) where T : IConvertible
         {
             StringBuilder Value = new StringBuilder( 1024 );
             Config.GetPrivateProfileString( Section, Key, "", Value, 1024, IniLocation );
 
             return (T)Convert.ChangeType( Value.ToString(), typeof( T ), CultureInfo.InvariantCulture );
+        }
+
+        public static Database.DatabaseEngine GetDatabaseEngine()
+        {
+            string Name = Config.GetType<string>( "Database", "Engine" );
+            Type EnumType = typeof( Database.DatabaseEngine );
+
+            return ( (Database.DatabaseEngine)Enum.Parse( EnumType, Name, true ) );
+
         }
 
         public static void SetValue( string Section, string Key, object Value )
