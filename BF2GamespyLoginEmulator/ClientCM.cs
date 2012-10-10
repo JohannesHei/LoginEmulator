@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using Gamespy.Database;
 
 namespace Gamespy
 {
@@ -22,6 +24,7 @@ namespace Gamespy
         private ClientStream Stream;
         private TcpClient Client;
         private Random rand;
+        private GamespyDatabase GsDB;
         private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string chars2 = "123456789abcdef";
         private char[] backslash = { '\\' };
@@ -88,9 +91,11 @@ namespace Gamespy
         private int Step = 0;
         private bool BF1_5 = false;
         private string clientNick;
+        private string clientLt;
         private string clientChallengeKey;
         private string serverChallengeKey;
         private string clientResponse;
+        private Dictionary<string, object> User;
 
         #endregion Variables
 
@@ -102,6 +107,9 @@ namespace Gamespy
 
             // Set the client variable
             this.Client = client;
+
+            // Load database connection
+            GsDB = new GamespyDatabase();
 
              // Init a new client stream class
             Stream = new ClientStream(client);
@@ -210,19 +218,37 @@ namespace Gamespy
         /// </summary>
         public void SendProof()
         {
-            // Get password and user data from database
-            // Use the GenerateRepsonseValue method to compare with the "response" value
-            //  ^ this validates the given password
-            // Use the GenerateResponseValue method to create the proof string
-            // Generate a session ID
-            string value = GenerateResponseValue(clientNick, "test", clientChallengeKey, serverChallengeKey);
+            // Get user data from database
+            User = GsDB.GetUser(clientNick);
+            if (User == null)
+            {
+                Stream.Write("\\error\\\\err\\260\\fatal\\\\errmsg\\Username [{0}] doesn't exist!\\id\\1\\final\\");
+                Dispose();
+                return;
+            }
+
+            // Make sure we have a valid PID
+            int pid;
+            if ((int)User["id"] < 1000000)
+                pid = (((int)User["id"]) + 500000000);
+            else
+                pid = (int)User["id"];
+
+            User["id"] = pid.ToString();
+
+            // Use the GenerateRepsonseValue method to compare with the "response" value.
+            // this validates the given password
+            string value = GenerateResponseValue(clientNick, (string)User["password"], clientChallengeKey, serverChallengeKey);
             if (clientResponse == value)
             {
-                // Password is correct
-                string proof = GenerateResponseValue(clientNick, "test", serverChallengeKey, clientChallengeKey);
+                // Password is correct, create a LT whatever that is :S
+                clientLt = GenerateRandomString(22);
+
+                // Use the GenerateResponseValue method to create the proof string
+                string proof = GenerateResponseValue(clientNick, (string)User["password"], serverChallengeKey, clientChallengeKey);
                 string data = String.Format(
                     "\\lc\\2\\sesskey\\{0}\\proof\\{1}\\userid\\{2}\\profileid\\{3}\\uniquenick\\{4}\\lt\\{5}__\\id\\1\\final\\",
-                    GenerateSession(), proof, "101249154", "101249154", clientNick, GenerateRandomString(22)
+                    GenerateSession(), proof, pid, pid, clientNick, clientLt
                 );
                 Stream.Write(data);
             }
@@ -230,16 +256,17 @@ namespace Gamespy
             {
                 // Password is incorrect with database value
                 Stream.Write("\\error\\\\err\\260\\fatal\\\\errmsg\\The password provided is incorrect.\\id\\1\\final\\");
+                Dispose();
             }
         }
 
-        private void SendProfile()
+        private void SendProfile(bool retrieve)
         {
             string data = String.Format(
                     "\\pi\\\\profileid\\{0}\\nick\\{1}\\userid\\{2}\\email\\{3}\\sig\\{4}\\uniquenick\\{5}\\pid\\0\\firstname\\\\lastname\\" +
-                    "\\country\\US\\birthday\\16844722\\lon\\0.000000\\lat\\0.000000\\loc\\\\id\\2\\final\\",
-                    "101249154", clientNick, "101249154", "wilson.steven10@yahoo.com", GenerateSig(), clientNick
-                );
+                    "\\countrycode\\{6}\\birthday\\16844722\\lon\\0.000000\\lat\\0.000000\\loc\\\\id\\{7}\\final\\",
+                    (string)User["id"], clientNick, (string)User["id"], (string)User["email"], GenerateSig(), clientNick, (string)User["country"], 
+                    (retrieve ? "5" : "2"));
             Stream.Write(data);
 
             // Idk why... but it has to be this way
@@ -247,7 +274,7 @@ namespace Gamespy
             {
                 Stream.Write("\\ka\\\\final\\");
                 Stream.Write("\\ka\\\\final\\");
-                Stream.Write( String.Format("\\lt\\{0}\\final\\", GenerateRandomString(22)));
+                Stream.Write( String.Format("\\lt\\{0}__\\final\\", clientLt));
                 Stream.Write("\\ka\\\\final\\");
             }
         }
@@ -260,17 +287,26 @@ namespace Gamespy
                 string message = Stream.Read();
                 string[] recv = message.Split('\\');
 
-                switch (Step)
+                switch (recv[1])
                 {
-                    case 0:
+                    case "login":
                         ProccessLogin(recv);
                         Step++;
                         break;
-                    case 1:
-                        SendProfile();
-                        Step++;
+                    case "getprofile":
+                        if (Step < 2)
+                        {
+                            SendProfile(false);
+                            Step++;
+                        }
+                        else
+                            SendProfile(true);
                         break;
-                    case 2:
+                    case "logout":
+                        LogOut();
+                        break;
+                    default:
+                        Console.WriteLine(message);
                         break;
                 }
             } 
@@ -283,6 +319,11 @@ namespace Gamespy
         private void HandleNewUser(string[] recv)
         {
             // ...
+        }
+
+        private void LogOut()
+        {
+            Dispose();
         }
 
         #endregion

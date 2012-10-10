@@ -84,6 +84,7 @@
     <Compile Include="ClientSP.cs" />
     <Compile Include="ClientStream.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Database\GamespyDatabase.cs" />
     <Compile Include="Database\DatabaseDriver.cs" />
     <Compile Include="Database\DatabaseEngine.cs" />
     <Compile Include="SocketExtensions.cs" />

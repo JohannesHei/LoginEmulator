@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using Gamespy.Database;
 
 namespace Gamespy
 {
@@ -14,6 +15,7 @@ namespace Gamespy
         private ClientStream Stream;
         private TcpClient Client;
         private Thread iThread;
+        private GamespyDatabase GsDB;
         private bool BF_15 = false;
         private string clientNick;
         private string clientPID;
@@ -25,6 +27,9 @@ namespace Gamespy
 
             // Set the client variable
             this.Client = client;
+
+            // Init a database connection
+            GsDB = new GamespyDatabase();
 
             // Init a new client stream class
             Stream = new ClientStream(client);
@@ -83,7 +88,6 @@ namespace Gamespy
             {
                 // TODO: process the 'getprofile' (returned at this point) data
                 string message = Stream.Read();
-                Console.WriteLine(message);
                 string[] recv = message.Split('\\');
 
                 switch (recv[1])
@@ -96,7 +100,6 @@ namespace Gamespy
                         // TODO Validate that the account exists!
                         // GetUser(GetParamenterValue(recv, "email"), GetParamenterValue(recv, "pass"));
                         clientNick = "Wilson212";
-                        clientPID = "101249154";
                         SendGPSP();
                         break;
                     case "check":
@@ -114,6 +117,7 @@ namespace Gamespy
 
         private void SendCheck()
         {
+            clientPID = "101249154";
             string message = String.Format("\\cur\\0\\pid\\{0}\\final\\", clientPID);
             Stream.Write(message);
         }
