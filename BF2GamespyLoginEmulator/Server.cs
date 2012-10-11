@@ -76,7 +76,7 @@ namespace Gamespy
                 if (GPCMListener.Pending())
                 {
                     TcpClient client = GPCMListener.AcceptTcpClient();
-                    ClientsCM.Add(new ClientCM(client, Database));
+                    ClientsCM.Add(new ClientCM(client));
                 }
 
                 for(int i = 0; i < ClientsCM.Count; i++)
@@ -98,7 +98,7 @@ namespace Gamespy
                 if (GPSPListener.Pending())
                 {
                     TcpClient client = GPSPListener.AcceptTcpClient();
-                    ClientsSP.Add(new ClientSP(client, Database));
+                    ClientsSP.Add(new ClientSP(client));
                 }
 
                 for (int i = 0; i < ClientsSP.Count; i++)

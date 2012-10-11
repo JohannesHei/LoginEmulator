@@ -67,6 +67,14 @@ namespace Gamespy
             return (GeneratePID(Nick) != 0) ? true : false;
         }
 
+        public void UpdateUser(string Nick, string CC)
+        {
+            Driver = new DatabaseDriver();
+            Driver.Connect();
+            Driver.Execute("UPDATE accounts SET country='{0}' WHERE name='{1}'", Nick, CC);
+            Driver.Close();
+        }
+
         public int GetPID(string Nick)
         {
             Driver = new DatabaseDriver();
@@ -97,17 +105,21 @@ namespace Gamespy
 
             int pid = 1;
             var Max = Driver.Query("SELECT MAX(pid) AS max FROM bf2pids", Nick);
-            if (Max == null)
+            try
+            {
+                pid = ((int)Max[0]["max"]) + 1;
+                if (pid < 500000000)
+                    pid = 500000000;
+            }
+            catch
+            {
                 pid = 500000000;
-            else
-                Server.Log("Max PID: {0}", Max[0]["max"].ToString());
-                //pid = ((int)Max[0]["max"]) + 1;
+            }
 
             int result = Driver.Execute("INSERT INTO bf2pids(pid, nick) VALUES('{0}', '{1}')", pid, Nick);
-            Console.WriteLine("Result: {0}, PID: {1}", result, pid);
 
             Driver.Close();
-            return result;
+            return(result != 0) ? pid : 0;
         }
     }
 }

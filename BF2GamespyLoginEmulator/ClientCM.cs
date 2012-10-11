@@ -24,7 +24,6 @@ namespace Gamespy
         private ClientStream Stream;
         private TcpClient Client;
         private Random rand;
-        private GamespyDatabase GsDB;
         private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string chars2 = "123456789abcdef";
         private char[] backslash = { '\\' };
@@ -100,13 +99,10 @@ namespace Gamespy
         #endregion Variables
 
 
-        public ClientCM(TcpClient client, GamespyDatabase gsDB)
+        public ClientCM(TcpClient client)
         {
             // Set disposed to false!
             this.Disposed = false;
-
-            // Init DB
-            this.GsDB = gsDB;
 
             // Set the client variable
             this.Client = client;
@@ -211,7 +207,7 @@ namespace Gamespy
         public void SendProof()
         {
             // Get user data from database
-            User = GsDB.GetUser(clientNick);
+            User = Server.Database.GetUser(clientNick);
             if (User == null)
             {
                 Stream.Write("\\error\\\\err\\265\\fatal\\\\errmsg\\The uniquenick provided is incorrect!\\id\\1\\final\\");
@@ -291,11 +287,14 @@ namespace Gamespy
                         else
                             SendProfile(true);
                         break;
+                    case "updatepro":
+                        UpdateUser(recv);
+                        break;
                     case "logout":
                         LogOut();
                         break;
                     default:
-                        Console.WriteLine(message);
+                        Server.Log("Unkown Message Passed: {0}", message);
                         break;
                 }
             } 
@@ -331,6 +330,11 @@ namespace Gamespy
             }
 
             Stream.Write("\\nur\\\\userid\\{0}\\profileid\\{1}\\id\\1\\final\\", Client["id"], Client["id"]);
+        }
+
+        private void UpdateUser(string[] recv)
+        {
+            Server.Database.UpdateUser(GetParameterValue(recv, "nick"), GetParameterValue(recv, "countrycode"));
         }
 
         private void LogOut()

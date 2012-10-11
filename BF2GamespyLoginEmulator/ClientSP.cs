@@ -15,20 +15,16 @@ namespace Gamespy
         private ClientStream Stream;
         private TcpClient Client;
         private Thread iThread;
-        private GamespyDatabase GsDB;
         private bool BF_15 = false;
         private Dictionary<string, object> ClientData = null;
 
-        public ClientSP(TcpClient client, GamespyDatabase gsDB)
+        public ClientSP(TcpClient client)
         {
             // Set disposed to false!
             this.Disposed = false;
 
             // Set the client variable
             this.Client = client;
-
-            // Init a database connection
-            this.GsDB = gsDB;
 
             // Init a new client stream class
             Stream = new ClientStream(client);
@@ -107,7 +103,7 @@ namespace Gamespy
 
         private void SendGPSP(string[] recv)
         {
-            ClientData = GsDB.GetUser(GetParameterValue(recv, "email"), GetParameterValue(recv, "pass"));
+            ClientData = Server.Database.GetUser(GetParameterValue(recv, "email"), GetParameterValue(recv, "pass"));
             if (ClientData == null)
             {
                 Stream.Write("\\nr\\0\\ndone\\\\final\\");
@@ -121,7 +117,7 @@ namespace Gamespy
 
         private void SendCheck(string[] recv)
         {
-            int pid = GsDB.GetPID(GetParameterValue(recv, "nick"));
+            int pid = Server.Database.GetPID(GetParameterValue(recv, "nick"));
             if (pid == 0)
             {
                 Stream.Write("\\cur\\0\\pid\\0\\final\\");
