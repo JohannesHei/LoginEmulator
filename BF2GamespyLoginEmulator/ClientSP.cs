@@ -9,7 +9,7 @@ using Gamespy.Database;
 
 namespace Gamespy
 {
-    class ClientSP : IDisposable
+    public class ClientSP : IDisposable
     {
         public bool Disposed { get; protected set; }
         private ClientStream Stream;
@@ -96,14 +96,7 @@ namespace Gamespy
                         if (L == 15)
                             BF_15 = true;
 
-                        // TODO Validate that the account exists!
-                        ClientData = GsDB.GetUser(GetParameterValue(recv, "email"), GetParameterValue(recv, "pass"));
-                        if (ClientData == null)
-                        {
-                            Stream.Write("\\nr\\0\\ndone\\\\final\\");
-                            break;
-                        }
-                        SendGPSP();
+                        SendGPSP(recv);
                         break;
                     case "check":
                         SendCheck(recv);
@@ -112,8 +105,15 @@ namespace Gamespy
             }
         }
 
-        private void SendGPSP()
+        private void SendGPSP(string[] recv)
         {
+            ClientData = GsDB.GetUser(GetParameterValue(recv, "email"), GetParameterValue(recv, "pass"));
+            if (ClientData == null)
+            {
+                Stream.Write("\\nr\\0\\ndone\\\\final\\");
+                return;
+            }
+
             Stream.Write("\\nr\\1\\nick\\{0}\\uniquenick\\{1}\\ndone\\\\final\\", 
                 (string)ClientData["name"], (string)ClientData["name"]
             );
@@ -121,26 +121,14 @@ namespace Gamespy
 
         private void SendCheck(string[] recv)
         {
-            if (ClientData == null)
+            int pid = GsDB.GetPID(GetParameterValue(recv, "nick"));
+            if (pid == 0)
             {
-                ClientData = GsDB.GetUser(GetParameterValue(recv, "nick"));
-                if (ClientData == null)
-                {
-                    Stream.Write("\\cur\\0\\pid\\0\\final\\");
-                    return;
-                }
+                Stream.Write("\\cur\\0\\pid\\0\\final\\");
+                return;
             }
 
-            // Calculate a proper pid
-            int pid;
-            if ((int)ClientData["id"] < 1000000)
-                pid = (((int)ClientData["id"]) + 500000000);
-            else
-                pid = (int)ClientData["id"];
-
-            ClientData["id"] = pid.ToString();
-
-            Stream.Write("\\cur\\0\\pid\\{0}\\final\\", ClientData["id"]);
+            Stream.Write("\\cur\\0\\pid\\{0}\\final\\", pid);
         }
 
         /// <summary>

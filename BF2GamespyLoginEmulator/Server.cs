@@ -4,24 +4,23 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Gamespy.Database;
 
 namespace Gamespy
 {
     public sealed class Server
     {
-        // private Socket BF2ASocket;
+        //private Socket BF2ASocket;
         private TcpListener GPCMListener, GPSPListener;
-        private Thread BF2AThread, GPCMThread, GPSPThread, InputThread;
+        private Thread GPCMThread, GPSPThread, InputThread;
         bool Shutdown = false;
-        private GamespyDatabase GsDB;
+        public static GamespyDatabase Database;
         private List<ClientCM> ClientsCM;
         private List<ClientSP> ClientsSP;
 
         public Server()
         {
             // First, Try to connect to the database!
-            GsDB = new GamespyDatabase();
+            Database = new GamespyDatabase();
 
             // Init the socket classes here
             //BF2ASocket = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
@@ -43,21 +42,17 @@ namespace Gamespy
             );
 
             InputThread = new Thread( InputLoop );
-            //BF2AThread = new Thread( BF2ALoop );
             GPCMThread = new Thread( GPCMLoop );
             GPSPThread = new Thread( GPSPLoop );
 
-            //BF2AThread.IsBackground = true;
             GPCMThread.IsBackground = true;
             GPSPThread.IsBackground = true;
             InputThread.IsBackground = false;
 
-            //BF2AThread.Name = "BF2A Listner";
             GPCMThread.Name = "GPCM Listner";
             GPSPThread.Name = "GPSP Listner";
             InputThread.Name = "Input Listener";
 
-            //BF2AThread.Start();
             GPCMThread.Start();
             GPSPThread.Start();
             InputThread.Start();
@@ -72,11 +67,6 @@ namespace Gamespy
             Console.WriteLine( "Stopped." );
         }
 
-        private void BF2ALoop()
-        {
-            //...
-        }
-
         private void GPCMLoop()
         {
             ClientsCM = new List<ClientCM>();
@@ -86,7 +76,7 @@ namespace Gamespy
                 if (GPCMListener.Pending())
                 {
                     TcpClient client = GPCMListener.AcceptTcpClient();
-                    ClientsCM.Add(new ClientCM(client, GsDB));
+                    ClientsCM.Add(new ClientCM(client, Database));
                 }
 
                 for(int i = 0; i < ClientsCM.Count; i++)
@@ -108,7 +98,7 @@ namespace Gamespy
                 if (GPSPListener.Pending())
                 {
                     TcpClient client = GPSPListener.AcceptTcpClient();
-                    ClientsSP.Add(new ClientSP(client, GsDB));
+                    ClientsSP.Add(new ClientSP(client, Database));
                 }
 
                 for (int i = 0; i < ClientsSP.Count; i++)

@@ -15,7 +15,7 @@ namespace Gamespy
     /// create new user accounts, and fetch profile information
     /// <remarks>gpcm.gamespy.com</remarks>
     /// </summary>
-    class ClientCM : IDisposable
+    public class ClientCM : IDisposable
     {
         #region Variables
 
@@ -214,7 +214,7 @@ namespace Gamespy
             User = GsDB.GetUser(clientNick);
             if (User == null)
             {
-                Stream.Write("\\error\\\\err\\260\\fatal\\\\errmsg\\Username [{0}] doesn't exist!\\id\\1\\final\\", clientNick);
+                Stream.Write("\\error\\\\err\\265\\fatal\\\\errmsg\\The uniquenick provided is incorrect!\\id\\1\\final\\");
                 Dispose();
                 return;
             }
@@ -308,15 +308,29 @@ namespace Gamespy
         private void HandleNewUser(string[] recv)
         {
             string Nick = GetParameterValue(recv, "nick");
-            if (GsDB.UserExists(Nick))
+            string Email = GetParameterValue(recv, "email");
+            if (Server.Database.UserExists(Nick))
             {
+                Server.Log("Step 1.5");
                 Stream.Write("\\error\\\\err\\516\\fatal\\\\errmsg\\This account name is already in use!\\id\\1\\final\\");
                 Dispose();
                 return;
             }
 
-            // TODO, password decrypt for database insertion
-            // Will have to use Gamespy's custom Base64 format for decoding
+            // We need to decode the Gamespy specific encoding for the password
+            string Password = Utils.DecodeGamespyPassword(GetParameterValue(recv, "passwordenc"));
+            bool result = Server.Database.CreateUser(Nick, Password, Email, "US");
+            var Client = Server.Database.GetUser(Nick);
+
+            // Fetch the user to make sure we are good
+            if (!result || Client == null)
+            {
+                Stream.Write("\\error\\\\err\\516\\fatal\\\\errmsg\\Error creating account!\\id\\1\\final\\");
+                Dispose();
+                return;
+            }
+
+            Stream.Write("\\nur\\\\userid\\{0}\\profileid\\{1}\\id\\1\\final\\", Client["id"], Client["id"]);
         }
 
         private void LogOut()
