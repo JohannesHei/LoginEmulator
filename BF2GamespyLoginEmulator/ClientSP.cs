@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using Gamespy.Database;
 
 namespace Gamespy
 {
@@ -118,7 +115,7 @@ namespace Gamespy
             ClientData = Server.Database.GetUser(GetParameterValue(recv, "email"), GetParameterValue(recv, "pass"));
             if (ClientData == null)
             {
-                Stream.Write("\\nr\\0\\ndone\\\\final\\");
+                Stream.Write("\\nr\\{0}\\ndone\\\\final\\");
                 return;
             }
 

@@ -10,9 +10,9 @@ namespace Gamespy
     public sealed class Server
     {
         //private Socket BF2ASocket;
+        private bool Shutdown = false;
         private TcpListener GPCMListener, GPSPListener;
         private Thread GPCMThread, GPSPThread, InputThread;
-        bool Shutdown = false;
         public static GamespyDatabase Database;
         private List<ClientCM> ClientsCM;
         private List<ClientSP> ClientsSP;
@@ -34,15 +34,16 @@ namespace Gamespy
         /// </summary>
         public void Start()
         {
+            Console.WriteLine("Initializing...");
+
             //BF2ASocket.Bind( new IPEndPoint( IPAddress.Loopback, 27900 ) );
             GPSPListener.Start();
             GPCMListener.Start();
 
-            Console.Write
-            (
-                "<gpcm.gamespy.com> successfully bound to {0}" + Environment.NewLine +
-                "<gpsp.gamespy.com> successfully bound to {1}" + Environment.NewLine,
-                GPCMListener.LocalEndpoint, GPSPListener.LocalEndpoint
+            Console.Write(Environment.NewLine +
+                " - <gpcm.gamespy.com> successfully bound to {0}" + Environment.NewLine +
+                " - <gpsp.gamespy.com> successfully bound to {1}" + Environment.NewLine +
+                Environment.NewLine, GPCMListener.LocalEndpoint, GPSPListener.LocalEndpoint
             );
 
             InputThread = new Thread( InputLoop );
@@ -61,7 +62,7 @@ namespace Gamespy
             GPSPThread.Start();
             InputThread.Start();
 
-            Console.WriteLine("Ready for connections!");
+            Console.WriteLine("Ready for connections! Type 'help' for a list of commands");
             Console.Beep();
         }
 
@@ -152,6 +153,12 @@ namespace Gamespy
                         break;
                     case "connections":
                         Console.WriteLine("Total Connections: {0}", ClientsCM.Count);
+                        break;
+                    case "help":
+                        Console.Write(Environment.NewLine +
+                            "stop/quit/exit - Stops the server" + Environment.NewLine +
+                            "connections    - Displays the current number of connected clients" + Environment.NewLine
+                        );
                         break;
                     default:
                         lock (Console.Out)
