@@ -15,7 +15,6 @@ namespace Gamespy
         private ClientStream Stream;
         private TcpClient Client;
         private Thread iThread;
-        private bool BF_15 = false;
         private Dictionary<string, object> ClientData = null;
 
         public ClientSP(TcpClient client)
@@ -42,7 +41,11 @@ namespace Gamespy
             this.Dispose(true);
         }
 
-        //This becomes private void Dispose( bool Disposing ) on sealed classes.
+        /// <summary>
+        /// The Classes' disposing method. This method is used by the server to
+        /// cleanup after the client disconnects, as well as when to unload the class
+        /// </summary>
+        /// <param name="Disposing"></param>
         protected virtual void Dispose(bool Disposing)
         {
             //If we've already been disposed, don't call again.
@@ -58,12 +61,18 @@ namespace Gamespy
             this.Disposed = true;
         }
 
+        /// <summary>
+        /// Dispose method to be called by the server
+        /// </summary>
         public void Dispose()
         {
             //Clean up everything.
             this.Dispose(true);
         }
 
+        /// <summary>
+        /// Starts the GPSP.gamespy.com listner for this client
+        /// </summary>
         public void Start()
         {
             Server.Log("[GPSP] Client Connected: {0}", Client.Client.RemoteEndPoint);
@@ -77,6 +86,9 @@ namespace Gamespy
             Dispose();
         }
 
+        /// <summary>
+        /// Main Listener loop
+        /// </summary>
         public void Update()
         {
             if (Stream.HasData())
@@ -88,10 +100,6 @@ namespace Gamespy
                 switch (recv[1])
                 {
                     case "nicks":
-                        int L = recv.Length;
-                        if (L == 15)
-                            BF_15 = true;
-
                         SendGPSP(recv);
                         break;
                     case "check":
@@ -101,6 +109,10 @@ namespace Gamespy
             }
         }
 
+        /// <summary>
+        /// This method is requested by the client whenever an accounts existance needs validated
+        /// </summary>
+        /// <param name="recv"></param>
         private void SendGPSP(string[] recv)
         {
             ClientData = Server.Database.GetUser(GetParameterValue(recv, "email"), GetParameterValue(recv, "pass"));
@@ -115,6 +127,10 @@ namespace Gamespy
             );
         }
 
+        /// <summary>
+        /// This is the primary method for fetching an accounts BF2 PID
+        /// </summary>
+        /// <param name="recv"></param>
         private void SendCheck(string[] recv)
         {
             int pid = Server.Database.GetPID(GetParameterValue(recv, "nick"));

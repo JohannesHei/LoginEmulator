@@ -28,6 +28,10 @@ namespace Gamespy
             GPSPListener = new TcpListener( IPAddress.Loopback, 29901 );
         }
 
+        /// <summary>
+        /// This method initiates the entire server, and allows the Listeners
+        /// to bind to their ports
+        /// </summary>
         public void Start()
         {
             //BF2ASocket.Bind( new IPEndPoint( IPAddress.Loopback, 27900 ) );
@@ -61,12 +65,19 @@ namespace Gamespy
             Console.Beep();
         }
 
+        /// <summary>
+        /// Kills the server, and begins the shutdown process
+        /// </summary>
         public void Stop()
         {
             Shutdown = true;
             Console.WriteLine( "Stopped." );
         }
 
+        /// <summary>
+        /// Main GPCM listner loop. Accepts new Tcp clients and keeps
+        /// active sessions alive
+        /// </summary>
         private void GPCMLoop()
         {
             ClientsCM = new List<ClientCM>();
@@ -89,6 +100,10 @@ namespace Gamespy
             }
         }
 
+        /// <summary>
+        /// Main GPSP listner loop. Accepts new Tcp clients and keeps
+        /// active sessions alive
+        /// </summary>
         private void GPSPLoop()
         {
             ClientsSP = new List<ClientSP>();
@@ -111,6 +126,10 @@ namespace Gamespy
             }
         }
 
+        /// <summary>
+        /// Main loop for Input checking. This loop also keeps the console
+        /// open and the server running
+        /// </summary>
         private void InputLoop()
         {
             while( !Shutdown )
@@ -144,6 +163,10 @@ namespace Gamespy
             }
         }
 
+        /// <summary>
+        /// This method is used to store a message in the console.log file
+        /// </summary>
+        /// <param name="message">The message to be written to the log file</param>
         public static void Log(string message)
         {
             DateTime datet = DateTime.Now;
@@ -166,6 +189,10 @@ namespace Gamespy
             }
         }
 
+        /// <summary>
+        /// This method is used to store a message in the console.log file
+        /// </summary>
+        /// <param name="message">The message to be written to the log file</param>
         public static void Log(string message, params object[] items)
         {
             Log(String.Format(message, items));

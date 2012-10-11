@@ -115,14 +115,20 @@ namespace Gamespy
             iThread.Start();
         }
 
-        //Destructor.
+        /// <summary>
+        /// Destructor
+        /// </summary>
         ~ClientCM()
         {
                 // We don't clean up managed resources here but the Framework does that automatically on class destruction.
                 this.Dispose( false );
         }
-               
-        //This becomes private void Dispose( bool Disposing ) on sealed classes.
+
+        /// <summary>
+        /// The Classes' disposing method. This method is used by the server to
+        /// cleanup after the client disconnects, as well as when to unload the class
+        /// </summary>
+        /// <param name="Disposing"></param>
         protected virtual void Dispose( bool Disposing )
         {
                 //If we've already been disposed, don't call again.
@@ -138,6 +144,9 @@ namespace Gamespy
                 this.Disposed = true;
         }
 
+        /// <summary>
+        /// Dispose method to be called by the server
+        /// </summary>
         public void Dispose()
         {
             //Clean up everything.
@@ -146,6 +155,9 @@ namespace Gamespy
 
         #region Steps
 
+        /// <summary>
+        /// Starts the GPCM.gamespy.com listner for this client
+        /// </summary>
         public void Start()
         {
             Server.Log("[GPCM] Client Connected: {0}", Client.Client.RemoteEndPoint);
@@ -242,6 +254,10 @@ namespace Gamespy
             }
         }
 
+        /// <summary>
+        /// This method is called when the client requests for the Account profile
+        /// </summary>
+        /// <param name="retrieve">Determines the return ID</param>
         private void SendProfile(bool retrieve)
         {
             Stream.Write(
@@ -260,6 +276,10 @@ namespace Gamespy
             }
         }
 
+        /// <summary>
+        /// Main listner loop. Keeps an open stream between the client and server while
+        /// the client is logged in / playing
+        /// </summary>
         private void Update()
         {
             if (Stream.HasData())
@@ -304,13 +324,17 @@ namespace Gamespy
 
         #region User Methods
 
+        /// <summary>
+        /// Whenever the "newuser" command is recieved, this method is called to
+        /// add the new users information into the database
+        /// </summary>
+        /// <param name="recv">Array of information sent by the server</param>
         private void HandleNewUser(string[] recv)
         {
             string Nick = GetParameterValue(recv, "nick");
             string Email = GetParameterValue(recv, "email");
             if (Server.Database.UserExists(Nick))
             {
-                Server.Log("Step 1.5");
                 Stream.Write("\\error\\\\err\\516\\fatal\\\\errmsg\\This account name is already in use!\\id\\1\\final\\");
                 Dispose();
                 return;
@@ -332,11 +356,19 @@ namespace Gamespy
             Stream.Write("\\nur\\\\userid\\{0}\\profileid\\{1}\\id\\1\\final\\", Client["id"], Client["id"]);
         }
 
+
+        /// <summary>
+        /// Updates the Users Country code when sent by the client
+        /// </summary>
+        /// <param name="recv">Array of information sent by the server</param>
         private void UpdateUser(string[] recv)
         {
             Server.Database.UpdateUser(GetParameterValue(recv, "nick"), GetParameterValue(recv, "countrycode"));
         }
 
+        /// <summary>
+        /// Kills the current Client session, and disconnects from the client
+        /// </summary>
         private void LogOut()
         {
             Dispose();
