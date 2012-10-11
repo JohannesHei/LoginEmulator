@@ -157,7 +157,7 @@ namespace Gamespy
         public static void Log(string message)
         {
             DateTime datet = DateTime.Now;
-            String logFile = Path.Combine( Utils.AssemblyPath, "Console.log");
+            String logFile = Path.Combine( Utils.AssemblyPath, "console.log");
             if (!File.Exists(logFile))
             {
                 FileStream files = File.Create(logFile);

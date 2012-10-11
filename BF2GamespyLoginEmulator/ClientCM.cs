@@ -175,13 +175,13 @@ namespace Gamespy
         public void SendServerChallenge()
         {
             // First we need to create a random string the length of 10 characters
-            char[] buffer = new char[10];
+            string buffer = "";
             rand = new Random((int)DateTime.Now.Ticks);
             for (int i = 0; i < 10; i++)
-                buffer[i] = chars[rand.Next(chars.Length)];
+                buffer += chars[rand.Next(chars.Length)];
 
             // Next we send the client the challenge key
-            serverChallengeKey = buffer.ToString();
+            serverChallengeKey = buffer;
             Stream.Write("\\lc\\1\\challenge\\{0}\\id\\1\\final\\", serverChallengeKey);
         }
 
