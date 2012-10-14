@@ -98,6 +98,8 @@ namespace Gamespy
                         ClientsCM.RemoveAt(i);
                     }
                 }
+
+                Thread.Sleep(100);
             }
         }
 
@@ -124,6 +126,8 @@ namespace Gamespy
                         ClientsSP.RemoveAt(i);
                     }
                 }
+
+                Thread.Sleep(100);
             }
         }
 
@@ -167,6 +171,8 @@ namespace Gamespy
                         }
                         break;
                 }
+
+                Thread.Sleep(100);
             }
         }
 
