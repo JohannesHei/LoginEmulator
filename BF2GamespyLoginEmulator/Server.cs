@@ -161,7 +161,10 @@ namespace Gamespy
                         Stop();
                         break;
                     case "connections":
-                        Console.WriteLine(" - Total Connections: {0}", ClientsCM.Count);
+                        Console.WriteLine(" - Total Connections: {0}" + Environment.NewLine, ClientsCM.Count);
+                        break;
+                    case "accounts":
+                        Console.WriteLine(" - Total Accounts: {0}" + Environment.NewLine, Database.GetNumAccounts());
                         break;
                     case "fetch":
                         // Prevent an out of range exception
@@ -336,6 +339,7 @@ namespace Gamespy
                         Console.Write(Environment.NewLine +
                             "stop/quit/exit          - Stops the server" + Environment.NewLine +
                             "connections             - Displays the current number of connected clients" + Environment.NewLine +
+                            "accounts                - Displays the current number accounts in the DB." + Environment.NewLine +
                             "create {nick} {password} {email}  - Create a new Gamespy account." + Environment.NewLine +
                             "delete {nick}           - Deletes a user account. BF2 PID will not be removed." + Environment.NewLine +
                             "fetch {nick}            - Displays the account information" + Environment.NewLine +

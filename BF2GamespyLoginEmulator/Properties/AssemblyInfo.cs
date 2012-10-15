@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BF2GamespyLoginEmulator")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("BF2 Gamespy Login Emulator")]
+[assembly: AssemblyDescription("A Login Emulator for Battlefield 2")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Plexis Software")]
-[assembly: AssemblyProduct("BF2GamespyLoginEmulator")]
+[assembly: AssemblyProduct("BF2 Gamespy Login Emulator")]
 [assembly: AssemblyCopyright("Copyright © Plexis 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

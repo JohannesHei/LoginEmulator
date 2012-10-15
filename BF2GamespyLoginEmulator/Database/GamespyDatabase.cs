@@ -167,5 +167,18 @@ namespace Gamespy
             Driver.Close();
             return(result != 0) ? pid : 0;
         }
+
+        public int GetNumAccounts()
+        {
+            Driver = new DatabaseDriver();
+            Driver.Connect();
+
+            int result = 0;
+            List<Dictionary<string, object>> r = Driver.Query("SELECT COUNT(id) AS count FROM accounts");
+            Int32.TryParse(r[0]["count"].ToString(), out result);
+
+            Driver.Close();
+            return result;
+        }
     }
 }
