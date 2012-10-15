@@ -30,17 +30,13 @@ namespace Gamespy
                 iServer = new Server();
                 iServer.Start();
             }
-            catch( System.Net.Sockets.SocketException e )
+            catch (Exception e)
             {
-                Console.WriteLine( e.ToString() );
-            }
-            catch( System.Threading.ThreadInterruptedException e )
-            {
-                Console.WriteLine( e.ToString() );
-            }
-            catch( Exception e )
-            {
-                Console.WriteLine( e.ToString() );
+                Console.WriteLine(e.Message.ToString());
+
+                // Wait for the user to terminate the program
+                Console.WriteLine("Press Enter to terminate...");
+                Console.Read();
             }
         }
     } 

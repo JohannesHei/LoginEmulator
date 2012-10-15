@@ -90,7 +90,6 @@
     <Compile Include="Database\GamespyDatabase.cs" />
     <Compile Include="Database\DatabaseDriver.cs" />
     <Compile Include="Database\DatabaseEngine.cs" />
-    <Compile Include="Hosts.cs" />
     <Compile Include="SocketExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
