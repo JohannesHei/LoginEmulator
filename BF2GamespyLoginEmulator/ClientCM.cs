@@ -227,7 +227,8 @@ namespace Gamespy
             }
 
             // Make sure the id is a string!
-            int pid = (int)User["id"];
+            int pid;
+            Int32.TryParse(User["id"].ToString(), out pid);
             User["id"] = pid.ToString();
 
             // Use the GenerateRepsonseValue method to compare with the "response" value.

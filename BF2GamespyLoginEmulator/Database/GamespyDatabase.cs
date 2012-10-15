@@ -93,7 +93,33 @@ namespace Gamespy
 
             Driver.Close();
 
-            return (int)Rows[0]["pid"];
+            int pid;
+            Int32.TryParse(Rows[0]["pid"].ToString(), out pid);
+            return pid;
+        }
+
+        public int SetPID(string Nick, int Pid)
+        {
+            Driver = new DatabaseDriver();
+            Driver.Connect();
+
+            var Rows = Driver.Query("SELECT pid FROM bf2pids WHERE nick='{0}'", Nick);
+            var PidExists = Driver.Query("SELECT nick FROM bf2pids WHERE pid='{0}'", Pid);
+
+            // If no user exists, return code -1
+            if (Rows == null)
+                return -1;
+
+            // If PID is false, the PID is not taken
+            if (PidExists == null)
+            {
+                int Success = Driver.Execute("UPDATE bf2pids SET pid='{0}' WHERE nick='{1}'", Pid, Nick);
+                Driver.Close();
+                return (Success == 1) ? 1 : 0;
+            }
+
+            Driver.Close();
+            return -2; // PID exists already
         }
 
         public int GeneratePID(string Nick)

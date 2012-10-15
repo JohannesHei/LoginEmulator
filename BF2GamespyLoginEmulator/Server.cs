@@ -62,7 +62,7 @@ namespace Gamespy
             GPSPThread.Start();
             InputThread.Start();
 
-            Console.WriteLine("Ready for connections! Type 'help' for a list of commands");
+            Console.WriteLine("Ready for connections! Type 'help' for a list of commands" + Environment.NewLine);
             Console.Beep();
         }
 
@@ -147,8 +147,9 @@ namespace Gamespy
                 if( string.IsNullOrWhiteSpace( Line ) )
                     continue;
 
-                string command = Line.ToLower().Trim();
-                switch (command)
+                string command = Line.Trim();
+                string[] parts = command.Split(' ');
+                switch (parts[0])
                 {
                     case "stop":
                     case "quit":
@@ -156,12 +157,87 @@ namespace Gamespy
                         Stop();
                         break;
                     case "connections":
-                        Console.WriteLine("Total Connections: {0}", ClientsCM.Count);
+                        Console.WriteLine(" - Total Connections: {0}", ClientsCM.Count);
+                        break;
+                    case "getuser":
+                        if(String.IsNullOrEmpty(parts[1]))
+                        {
+                            Console.WriteLine(" - No account named provided. Please make sure you are providing an account name, and not a space");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Fetch user account info
+                        Dictionary<string, object> user = Database.GetUser(parts[1]);
+                        if(user == null)
+                        {
+                            Console.WriteLine(" - Account '{0}' does not exist in the gamespy database.", parts[1]);
+                            continue;
+                        }
+
+                        // Get BF2 PID
+                        int pid = Database.GetPID(parts[1]);
+                        Console.Write(
+                            " - Account ID: " + user["id"].ToString() + Environment.NewLine +
+                            " - BF2 PID: " + pid.ToString() + Environment.NewLine +
+                            " - Email: " + user["email"].ToString() + Environment.NewLine +
+                            " - Country: " + user["country"].ToString() + Environment.NewLine
+                            + Environment.NewLine
+                        );
+                        break;
+                    case "setpid":
+                        if (String.IsNullOrEmpty(parts[1]) || String.IsNullOrEmpty(parts[2]))
+                        {
+                            Console.WriteLine(" - Account name or PID not provided. Please try again with the correct format.");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Make sure the account exists!
+                        Dictionary<string, object> gUser = Database.GetUser(parts[1]);
+                        if (gUser == null)
+                        {
+                            Console.WriteLine(" - Account '{0}' does not exist in the gamespy database.", parts[1]);
+                            continue;
+                        }
+
+                        // Try to make a PID out of parts 2
+                        int newpid;
+                        if (!Int32.TryParse(parts[2], out newpid))
+                        {
+                            Console.WriteLine(" - Player ID must be an numeric only!");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // try and set the PID
+                        int result = Database.SetPID(parts[1], newpid);
+                        string message = "";
+                        switch (result)
+                        {
+                            case 1:
+                                message = "New PID is set!";
+                                break;
+                            case 0:
+                                message = "Error setting PID";
+                                break;
+                            case -1:
+                                message = String.Format("Account '{0}' does not exist in the gamespy database.", parts[1]);
+                                break;
+                            case -2:
+                                message = String.Format("PID {0} is already in use.", newpid);
+                                break;
+                        }
+                        Console.WriteLine(" - " + message);
+                        Console.WriteLine("");
                         break;
                     case "help":
                         Console.Write(Environment.NewLine +
-                            "stop/quit/exit - Stops the server" + Environment.NewLine +
-                            "connections    - Displays the current number of connected clients" + Environment.NewLine
+                            "stop/quit/exit          - Stops the server" + Environment.NewLine +
+                            "connections             - Displays the current number of connected clients" + Environment.NewLine +
+                            "getuser {nick}          - Displays the account information" + Environment.NewLine +
+                            "setpid {nick} {newpid}  - Sets the BF2 Player ID of the givin account name" + Environment.NewLine
+                            + Environment.NewLine
                         );
                         break;
                     default:
