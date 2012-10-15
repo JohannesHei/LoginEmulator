@@ -73,6 +73,15 @@ namespace Gamespy
             Driver.Close();
         }
 
+        public int DeleteUser(string Nick)
+        {
+            Driver = new DatabaseDriver();
+            Driver.Connect();
+            int result = Driver.Execute("DELETE FROM accounts WHERE name='{0}'", Nick);
+            Driver.Close();
+            return result;
+        }
+
         public int GetPID(string Nick)
         {
             Driver = new DatabaseDriver();
@@ -127,11 +136,24 @@ namespace Gamespy
             Driver = new DatabaseDriver();
             Driver.Connect();
 
+            // Define default PID
             int pid = 1;
-            var Max = Driver.Query("SELECT MAX(pid) AS max FROM bf2pids", Nick);
+
+            // Make sure the user doesnt have a PID already
+            List<Dictionary<string, Object>> Exists = Driver.Query("SELECT pid FROM bf2pids WHERE nick='{0}'", Nick);
+            if (Exists != null)
+            {
+                Int32.TryParse(Exists[0]["pid"].ToString(), out pid);
+                return pid;
+            }
+
+            // User doesnt have a PID yet, Get the current max PID and increment
+            var Max = Driver.Query("SELECT MAX(pid) AS max FROM bf2pids");
             try
             {
-                pid = ((int)Max[0]["max"]) + 1;
+                int max;
+                Int32.TryParse(Max[0]["max"].ToString(), out max);
+                pid = (max + 1);
                 if (pid < 500000000)
                     pid = 500000000;
             }

@@ -147,6 +147,10 @@ namespace Gamespy
                 if( string.IsNullOrWhiteSpace( Line ) )
                     continue;
 
+                // Define some base vars
+                Dictionary<string, object> user = new Dictionary<string,object>();
+                int pid = 0;
+
                 string command = Line.Trim();
                 string[] parts = command.Split(' ');
                 switch (parts[0])
@@ -159,7 +163,16 @@ namespace Gamespy
                     case "connections":
                         Console.WriteLine(" - Total Connections: {0}", ClientsCM.Count);
                         break;
-                    case "getuser":
+                    case "fetch":
+                        // Prevent an out of range exception
+                        if (parts.Length < 2)
+                        {
+                            Console.WriteLine(" - Incorrect command format. Please type 'help' to see list of available commands.");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Make sure we have a nick
                         if(String.IsNullOrEmpty(parts[1]))
                         {
                             Console.WriteLine(" - No account named provided. Please make sure you are providing an account name, and not a space");
@@ -168,7 +181,7 @@ namespace Gamespy
                         }
 
                         // Fetch user account info
-                        Dictionary<string, object> user = Database.GetUser(parts[1]);
+                        user = Database.GetUser(parts[1]);
                         if(user == null)
                         {
                             Console.WriteLine(" - Account '{0}' does not exist in the gamespy database.", parts[1]);
@@ -176,7 +189,7 @@ namespace Gamespy
                         }
 
                         // Get BF2 PID
-                        int pid = Database.GetPID(parts[1]);
+                        pid = Database.GetPID(parts[1]);
                         Console.Write(
                             " - Account ID: " + user["id"].ToString() + Environment.NewLine +
                             " - BF2 PID: " + pid.ToString() + Environment.NewLine +
@@ -185,7 +198,95 @@ namespace Gamespy
                             + Environment.NewLine
                         );
                         break;
+                    case "create":
+                        // Prevent an out of range exception
+                        if (parts.Length < 4)
+                        {
+                            Console.WriteLine(" - Incorrect command format. Please type 'help' to see list of available commands.");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Make sure our strings are not empty!
+                        if (String.IsNullOrEmpty(parts[1]) || String.IsNullOrEmpty(parts[2]) || String.IsNullOrEmpty(parts[3]))
+                        {
+                            Console.WriteLine(" - Account name, password, or email was not provided. Please try again with the correct format.");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Make sure the account exists!
+                        if (Database.UserExists(parts[1]))
+                        {
+                            Console.WriteLine(" - Account '{0}' already exists in the gamespy database.", parts[1]);
+                            continue;
+                        }
+
+                        bool r = Database.CreateUser(parts[1], parts[2], parts[3], "00");
+                        string m = (r == true) ? " - Account created successfully" : " - Error creating account!";
+                        Console.WriteLine(m + Environment.NewLine);
+                        break;
+                    case "delete":
+                        // Prevent an out of range exception
+                        if (parts.Length < 2)
+                        {
+                            Console.WriteLine(" - Incorrect command format. Please type 'help' to see list of available commands.");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Make sure our strings are not empty!
+                        if (String.IsNullOrEmpty(parts[1]))
+                        {
+                            Console.WriteLine(" - Account name was not provided. Please try again with the correct format.");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Make sure the account exists!
+                        if (!Database.UserExists(parts[1]))
+                        {
+                            Console.WriteLine(" - Account '{0}' doesnt exist in the gamespy database.", parts[1]);
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Do a confimration
+                        Console.WriteLine(" - Are you sure you want to delete account '{0}'? <y/n>", parts[1]);
+                        string v = Console.ReadLine().ToLower();
+
+                        // If no, stop here
+                        if (v == "n" || v == "no")
+                        {
+                            Console.WriteLine(" - Command cancelled." + Environment.NewLine);
+                            continue;
+                        }
+
+                        // Process any command other then no
+                        if (v == "y" || v == "yes")
+                        {
+                            string output = "";
+                            if (Database.DeleteUser(parts[1]) == 1)
+                                output = " - Account deleted successfully";
+                            else
+                                output = " - Failed to remove account from database.";
+
+                            Console.WriteLine(output + Environment.NewLine);
+                        }
+                        else
+                            Console.WriteLine(" - Incorrect repsonse. Aborting command" + Environment.NewLine);
+
+                        break;
                     case "setpid":
+                        // Prevent an out of range exception
+                        if (parts.Length < 3)
+                        {
+                            Console.WriteLine(" - Incorrect command format. Please type 'help' to see list of available commands.");
+                            Console.WriteLine("");
+                            continue;
+                        }
+
+                        // Make sure our strings are not empty!
                         if (String.IsNullOrEmpty(parts[1]) || String.IsNullOrEmpty(parts[2]))
                         {
                             Console.WriteLine(" - Account name or PID not provided. Please try again with the correct format.");
@@ -194,8 +295,8 @@ namespace Gamespy
                         }
 
                         // Make sure the account exists!
-                        Dictionary<string, object> gUser = Database.GetUser(parts[1]);
-                        if (gUser == null)
+                        user = Database.GetUser(parts[1]);
+                        if (user == null)
                         {
                             Console.WriteLine(" - Account '{0}' does not exist in the gamespy database.", parts[1]);
                             continue;
@@ -235,7 +336,9 @@ namespace Gamespy
                         Console.Write(Environment.NewLine +
                             "stop/quit/exit          - Stops the server" + Environment.NewLine +
                             "connections             - Displays the current number of connected clients" + Environment.NewLine +
-                            "getuser {nick}          - Displays the account information" + Environment.NewLine +
+                            "create {nick} {password} {email}  - Create a new Gamespy account." + Environment.NewLine +
+                            "delete {nick}           - Deletes a user account. BF2 PID will not be removed." + Environment.NewLine +
+                            "fetch {nick}            - Displays the account information" + Environment.NewLine +
                             "setpid {nick} {newpid}  - Sets the BF2 Player ID of the givin account name" + Environment.NewLine
                             + Environment.NewLine
                         );
