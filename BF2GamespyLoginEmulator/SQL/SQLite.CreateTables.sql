@@ -6,8 +6,3 @@ CREATE TABLE "main"."accounts" (
 	"country"  TEXT(4) NOT NULL,
 	"session"  INTEGER DEFAULT 0
 );
-
-CREATE TABLE "main"."bf2pids" (
-	"pid"  INTEGER PRIMARY KEY NOT NULL,
-	"nick"  TEXT(20) NOT NULL UNIQUE
-);

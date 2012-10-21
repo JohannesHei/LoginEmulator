@@ -6,8 +6,3 @@ CREATE TABLE `accounts` (
 	`country` VARCHAR(4) NOT NULL,
 	`session` INT NULL DEFAULT '0'
 ) DEFAULT CHARSET=latin1;
-
-CREATE TABLE `bf2pids` (
-  `pid` INT(9) NOT NULL PRIMARY KEY,
-  `nick` VARCHAR(20) NOT NULL UNIQUE
-) DEFAULT CHARSET=latin1;

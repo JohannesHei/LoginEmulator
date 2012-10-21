@@ -9,7 +9,6 @@ namespace Gamespy
 {
     public sealed class Server
     {
-        //private Socket BF2ASocket;
         private bool Shutdown = false;
         private TcpListener GPCMListener, GPSPListener;
         private Thread GPCMThread, GPSPThread, InputThread;
@@ -23,7 +22,6 @@ namespace Gamespy
             Database = new GamespyDatabase();
 
             // Init the socket classes here
-            //BF2ASocket = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
             GPCMListener = new TcpListener( IPAddress.Loopback, 29900 );
             GPSPListener = new TcpListener( IPAddress.Loopback, 29901 );
         }
@@ -36,7 +34,7 @@ namespace Gamespy
         {
             Console.WriteLine("Initializing...");
 
-            //BF2ASocket.Bind( new IPEndPoint( IPAddress.Loopback, 27900 ) );
+            // Start our listners
             GPSPListener.Start();
             GPCMListener.Start();
 
@@ -46,6 +44,7 @@ namespace Gamespy
                 Environment.NewLine, GPCMListener.LocalEndpoint, GPSPListener.LocalEndpoint
             );
 
+            // Init our main threads
             InputThread = new Thread( InputLoop );
             GPCMThread = new Thread( GPCMLoop );
             GPSPThread = new Thread( GPSPLoop );
@@ -139,8 +138,12 @@ namespace Gamespy
         {
             while( !Shutdown )
             {
-                if( !Console.KeyAvailable )
+                if (!Console.KeyAvailable)
+                {
+                    Thread.Sleep(100);
                     continue;
+                }
+
 
                 string Line = Console.ReadLine();
 
@@ -149,7 +152,6 @@ namespace Gamespy
 
                 // Define some base vars
                 Dictionary<string, object> user = new Dictionary<string,object>();
-                int pid = 0;
 
                 string command = Line.Trim();
                 string[] parts = command.Split(' ');
@@ -192,10 +194,8 @@ namespace Gamespy
                         }
 
                         // Get BF2 PID
-                        pid = Database.GetPID(parts[1]);
                         Console.Write(
                             " - Account ID: " + user["id"].ToString() + Environment.NewLine +
-                            " - BF2 PID: " + pid.ToString() + Environment.NewLine +
                             " - Email: " + user["email"].ToString() + Environment.NewLine +
                             " - Country: " + user["country"].ToString() + Environment.NewLine
                             + Environment.NewLine
