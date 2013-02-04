@@ -71,7 +71,8 @@ namespace BF2sLoginEmu
                 }
 
 
-                for (int i = 0; i < Clients.Count; i++)
+                // Remove from back to front
+                for (int i = Clients.Count - 1; i >= 0; i--)
                 {
                     if (Clients[i].Disposed)
                         Clients.RemoveAt(i);

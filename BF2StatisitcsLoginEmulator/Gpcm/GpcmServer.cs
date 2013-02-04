@@ -79,7 +79,8 @@ namespace BF2sLoginEmu
                     Clients.Add(new GpcmClient(Client));
                 }
 
-                for (int i = 0; i < Clients.Count; i++)
+                // Remove from back to front
+                for (int i = Clients.Count - 1; i >= 0; i--)
                 {
                     if (Clients[i].Disposed)
                         Clients.RemoveAt(i);
