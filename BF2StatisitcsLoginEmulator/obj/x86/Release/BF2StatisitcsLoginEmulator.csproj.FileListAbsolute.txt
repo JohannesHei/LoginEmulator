@@ -1,0 +1,12 @@
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\bin\Release\Config.ini
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\bin\Release\SQL\MySQL.CreateTables.sql
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\bin\Release\Bf2LoginEmulator.exe
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\bin\Release\Bf2LoginEmulator.pdb
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\bin\Release\MySql.Data.dll
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\bin\Release\System.Data.SQLite.dll
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\obj\x86\Release\ResolveAssemblyReference.cache
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\obj\x86\Release\BF2sLoginEmu.Properties.Resources.resources
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\obj\x86\Release\GenerateResource.read.1.tlog
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\obj\x86\Release\GenerateResource.write.1.tlog
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\obj\x86\Release\Bf2LoginEmulator.exe
+D:\Programming\C#\Projects\BF2StatisitcsLoginEmulator\BF2StatisitcsLoginEmulator\obj\x86\Release\Bf2LoginEmulator.pdb
