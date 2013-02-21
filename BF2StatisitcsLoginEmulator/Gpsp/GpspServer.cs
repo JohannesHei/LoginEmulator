@@ -18,7 +18,7 @@ namespace BF2sLoginEmu
         /// <summary>
         /// Our client connection thread
         /// </summary>
-        private Thread ListenThread;
+        private Thread ConnectionsThread;
 
         /// <summary>
         /// List of connected clients
@@ -31,10 +31,13 @@ namespace BF2sLoginEmu
             Listener = new TcpListener(IPAddress.Any, 29901);
             Listener.Start();
 
+            // Create a new thread to accept the connection
+            Listener.BeginAcceptTcpClient(new AsyncCallback(AcceptClient), null);
+
             // Start a new thread for accepting clients
-            ListenThread = new Thread(new ThreadStart(ListenForClients));
-            ListenThread.IsBackground = true;
-            ListenThread.Start();
+            ConnectionsThread = new Thread(new ThreadStart(UpdateConnections));
+            ConnectionsThread.IsBackground = true;
+            ConnectionsThread.Start();
         }
 
         /// <summary>
@@ -42,8 +45,8 @@ namespace BF2sLoginEmu
         /// </summary>
         public void Shutdown()
         {
-            // Stop Listening for new clients
-            ListenThread.Abort();
+            // Stop updating client checks
+            ConnectionsThread.Abort();
 
             // Disconnected all connected clients
             foreach (GpspClient C in Clients)
@@ -54,32 +57,38 @@ namespace BF2sLoginEmu
         }
 
         /// <summary>
-        /// Listens for pending connections
+        /// Update the connected clients
         /// </summary>
-        private void ListenForClients()
+        private void UpdateConnections()
         {
             // Keep looping
             while (true)
             {
-                // While we have connections pending, its a good idea to
-                // proccess each one now...
-                while (Listener.Pending())
-                {
-                    // Create a new thread to accept the connection
-                    TcpClient Client = Listener.AcceptTcpClient();
-                    Clients.Add(new GpspClient(Client));
-                }
-
-
                 // Remove from back to front
                 for (int i = Clients.Count - 1; i >= 0; i--)
                 {
                     if (Clients[i].Disposed)
+                    {
+                        lock (Clients)
                         Clients.RemoveAt(i);
+                    }
                 }
 
-                Thread.Sleep(100);
+                Thread.Sleep(500);
             }
+        }
+
+        /// <summary>
+        /// Accepts a TcpClient
+        /// </summary>
+        /// <param name="ar"></param>
+        private void AcceptClient(IAsyncResult ar)
+        {
+            // End the operation and display the received data on  
+            // the console.
+            TcpClient Client = Listener.EndAcceptTcpClient(ar);
+            Listener.BeginAcceptTcpClient(new AsyncCallback(AcceptClient), null);
+            Clients.Add(new GpspClient(Client));
         }
     }
 }
